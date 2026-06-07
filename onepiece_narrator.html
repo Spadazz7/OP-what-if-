@@ -600,6 +600,7 @@ input[type=range]::-webkit-slider-thumb{
       <button class="btn btnDark btnSm charNavBtn" data-section="marines" style="flex:1;min-width:80px">🪖 Marines/GM</button>
       <button class="btn btnDark btnSm charNavBtn" data-section="empereurs" style="flex:1;min-width:80px">👑 Empereurs</button>
       <button class="btn btnDark btnSm charNavBtn" data-section="corsaires" style="flex:1;min-width:80px">🏴‍☠ Corsaires</button>
+      <button class="btn btnDark btnSm charNavBtn" data-section="autres" style="flex:1;min-width:80px">⚙️ Autres</button>
     </div>
 
     <!-- REDFORCE SECTION -->
@@ -637,6 +638,13 @@ input[type=range]::-webkit-slider-thumb{
     <div id="charSection-corsaires" class="charSection" style="display:none">
       <div class="sectionLabel" style="color:var(--text2);margin-bottom:12px">🏴‍☠ 7 Grands Corsaires</div>
       <div id="charGrid-corsaires"></div>
+    </div>
+
+    <!-- AUTRES SECTION -->
+    <div id="charSection-autres" class="charSection" style="display:none">
+      <div class="sectionLabel" style="color:var(--text2);margin-bottom:12px">⚙️ Personnages custom</div>
+      <button class="btn btnDark" style="width:100%;margin-bottom:12px" id="btnNewChar">➕ Nouveau personnage</button>
+      <div id="charGrid-autres"></div>
     </div>
 
     <button class="btn btnDark" style="width:100%;margin-bottom:20px;margin-top:8px" id="btnSaveCrew">💾 Sauvegarder tout</button>
@@ -821,6 +829,86 @@ input[type=range]::-webkit-slider-thumb{
   </div>
 </div>
 
+<!-- MODAL: Nouveau personnage custom -->
+<div class="modalOverlay" id="modalNewChar">
+  <div class="modal">
+    <div class="modalTitle" id="modalNewCharTitle">NOUVEAU PERSONNAGE</div>
+    <div style="display:flex;gap:8px;margin-bottom:10px">
+      <div style="flex:1">
+        <div class="inputLabel">Nom</div>
+        <input type="text" id="ncNom" placeholder="Nom du personnage" style="margin-bottom:0">
+      </div>
+      <div style="flex:1">
+        <div class="inputLabel">Niveau (1–100)</div>
+        <input type="number" id="ncNiveau" min="1" max="100" value="1" style="margin-bottom:0">
+      </div>
+    </div>
+    <div class="inputLabel">Statut / Rang</div>
+    <input type="text" id="ncStatut" placeholder="ex: Capitaine, Agent, Pirate…" style="margin-bottom:10px">
+    <div style="display:flex;gap:8px;margin-bottom:10px">
+      <div style="flex:1">
+        <div class="inputLabel">Fluide offensif</div>
+        <select id="ncFluideOff" style="margin-bottom:0">
+          <option value="aucun">aucun</option>
+          <option value="basique" selected>basique</option>
+          <option value="avancé">avancé</option>
+        </select>
+      </div>
+      <div style="flex:1">
+        <div class="inputLabel">Maîtrise offensif</div>
+        <select id="ncMaitriseOff" style="margin-bottom:0">
+          <option value="incontrôlé">incontrôlé</option>
+          <option value="novice" selected>novice</option>
+          <option value="intermédiaire">intermédiaire</option>
+          <option value="expert">expert</option>
+          <option value="maître">maître</option>
+        </select>
+      </div>
+    </div>
+    <div style="display:flex;gap:8px;margin-bottom:10px">
+      <div style="flex:1">
+        <div class="inputLabel">Fluide perceptif</div>
+        <select id="ncFluidePer" style="margin-bottom:0">
+          <option value="aucun" selected>aucun</option>
+          <option value="basique">basique</option>
+          <option value="avancé">avancé</option>
+          <option value="suprême">suprême</option>
+        </select>
+      </div>
+      <div style="flex:1">
+        <div class="inputLabel">Fluide royal</div>
+        <select id="ncFluideRoy" style="margin-bottom:0">
+          <option value="aucun" selected>aucun</option>
+          <option value="basique">basique</option>
+          <option value="avancé">avancé</option>
+          <option value="suprême">suprême</option>
+        </select>
+      </div>
+    </div>
+    <div class="inputLabel">Fruit du démon (laisser vide si aucun)</div>
+    <input type="text" id="ncFruit" placeholder="ex: Logia - sable, Paramecia - fil…" style="margin-bottom:10px">
+    <div class="inputLabel">Statut de combat</div>
+    <select id="ncStatutCombat" style="margin-bottom:10px">
+      <option value="opérationnel" selected>opérationnel</option>
+      <option value="blessé">blessé</option>
+      <option value="gravement blessé">gravement blessé</option>
+      <option value="hors combat">hors combat</option>
+    </select>
+    <div class="inputLabel">Objectif actif</div>
+    <input type="text" id="ncObjectif" placeholder="ex: traque RedFORCE, protège Wano…" style="margin-bottom:10px">
+    <div class="inputLabel">Ce que ce personnage sait</div>
+    <textarea id="ncConnaissances" rows="2" placeholder="Uniquement ce qui lui a été révélé…" style="margin-bottom:10px"></textarea>
+    <div class="inputLabel">Notes</div>
+    <textarea id="ncNotes" rows="2" placeholder="Tout ce qui ne rentre pas dans les cases…" style="margin-bottom:14px"></textarea>
+    <input type="hidden" id="ncKey" value="__new__">
+    <div style="display:flex;gap:8px">
+      <button class="btn btnRed" style="flex:1;display:none" id="btnDeleteChar">Supprimer</button>
+      <button class="btn btnDark" style="flex:1" id="btnCancelNewChar">Annuler</button>
+      <button class="btn btnGold" style="flex:1" id="btnConfirmNewChar">Créer</button>
+    </div>
+  </div>
+</div>
+
 <script>
 // ================================================================
 // STATE
@@ -843,62 +931,69 @@ const S = {
     // characters: contrôle individuel de chaque personnage
     characters: {
       // REDFORCE
-      shanks:   { nom:'Shanks',   section:'redforce', prime:'0', statut:'Capitaine RedFORCE', relations:'', connaissances:'' },
-      marcus:   { nom:'Marcus',   section:'redforce', prime:'0', statut:'Second RedFORCE',   relations:'', connaissances:'' },
-      silver:   { nom:'Silver',   section:'redforce', prime:'0', statut:'Membre RedFORCE',   relations:'', connaissances:'' },
-      sunShin:  { nom:'Sun Shin', section:'redforce', prime:'0', statut:'Membre RedFORCE',   relations:'', connaissances:'' },
-      sonya:    { nom:'Sonya',    section:'redforce', prime:'0', statut:'Membre RedFORCE',   relations:'', connaissances:'' },
-      lucky:    { nom:'Lucky',    section:'redforce', prime:'0', statut:'Membre RedFORCE',   relations:'', connaissances:'' },
-      iris:     { nom:'Iris',     section:'redforce', prime:'0', statut:'Membre RedFORCE',   relations:'', connaissances:'' },
+      shanks:   { nom:'Shanks',   section:'redforce', prime:'0', statut:'Capitaine RedFORCE', niveau:5, fluideOffensif:'basique', fluidePerceptif:'aucun', fluideRoyal:'basique', maitriseFluideOffensif:'novice', maitrisePerceptif:'novice', maitriseRoyal:'incontrôlé', statutCombat:'opérationnel', objectifActif:'', relations:[], connaissances:'', notes:'' },
+      marcus:   { nom:'Marcus',   section:'redforce', prime:'0', statut:'Second RedFORCE',   niveau:3, fluideOffensif:'basique', fluidePerceptif:'aucun', fluideRoyal:'aucun', maitriseFluideOffensif:'novice', maitrisePerceptif:'novice', maitriseRoyal:'aucun', statutCombat:'opérationnel', objectifActif:'', relations:[], connaissances:'', notes:'' },
+      silver:   { nom:'Silver',   section:'redforce', prime:'0', statut:'Membre RedFORCE',   niveau:2, fluideOffensif:'basique', fluidePerceptif:'aucun', fluideRoyal:'aucun', maitriseFluideOffensif:'novice', maitrisePerceptif:'novice', maitriseRoyal:'aucun', statutCombat:'opérationnel', objectifActif:'', relations:[], connaissances:'', notes:'' },
+      sunShin:  { nom:'Sun Shin', section:'redforce', prime:'0', statut:'Membre RedFORCE',   niveau:2, fluideOffensif:'basique', fluidePerceptif:'aucun', fluideRoyal:'aucun', maitriseFluideOffensif:'novice', maitrisePerceptif:'novice', maitriseRoyal:'aucun', statutCombat:'opérationnel', objectifActif:'', relations:[], connaissances:'', notes:'' },
+      sonya:    { nom:'Sonya',    section:'redforce', prime:'0', statut:'Membre RedFORCE',   niveau:2, fluideOffensif:'basique', fluidePerceptif:'aucun', fluideRoyal:'aucun', maitriseFluideOffensif:'novice', maitrisePerceptif:'novice', maitriseRoyal:'aucun', statutCombat:'opérationnel', objectifActif:'', relations:[], connaissances:'', notes:'' },
+      lucky:    { nom:'Lucky',    section:'redforce', prime:'0', statut:'Membre RedFORCE',   niveau:2, fluideOffensif:'basique', fluidePerceptif:'aucun', fluideRoyal:'aucun', maitriseFluideOffensif:'novice', maitrisePerceptif:'novice', maitriseRoyal:'aucun', statutCombat:'opérationnel', objectifActif:'', relations:[], connaissances:'', notes:'' },
+      iris:     { nom:'Iris',     section:'redforce', prime:'0', statut:'Membre RedFORCE',   niveau:2, fluideOffensif:'basique', fluidePerceptif:'aucun', fluideRoyal:'aucun', maitriseFluideOffensif:'novice', maitrisePerceptif:'novice', maitriseRoyal:'aucun', statutCombat:'opérationnel', objectifActif:'', relations:[], connaissances:'', notes:'' },
       // MARINES / GM
-      kong:     { nom:'Kong',     section:'marines', prime:'N/A', statut:'Amiral en Chef Suprême', relations:'', connaissances:'' },
-      sengoku:  { nom:'Sengoku',  section:'marines', prime:'N/A', statut:'Amiral de la Marine',     relations:'', connaissances:'' },
-      tsuru:    { nom:'Tsuru',    section:'marines', prime:'N/A', statut:'Amirale de la Marine',     relations:'', connaissances:'' },
-      zephyr:   { nom:'Zephyr',   section:'marines', prime:'N/A', statut:'Amiral de la Marine',      relations:'', connaissances:'' },
-      garp:     { nom:'Garp',     section:'marines', prime:'N/A', statut:'Vice-Amiral',              relations:'', connaissances:'' },
-      sakazuki: { nom:'Sakazuki (Akainu)',  section:'marines', prime:'N/A', statut:'Lieutenant de la Marine', relations:'', connaissances:'' },
-      kuzan:    { nom:'Kuzan (Aokiji)',     section:'marines', prime:'N/A', statut:'Lieutenant de la Marine', relations:'', connaissances:'' },
-      borsalino:{ nom:'Borsalino (Kizaru)', section:'marines', prime:'N/A', statut:'Lieutenant de la Marine', relations:'', connaissances:'' },
-      issho:    { nom:'Issho (Fujitora)',   section:'marines', prime:'N/A', statut:'Lieutenant de la Marine', relations:'', connaissances:'' },
-      aramaki:  { nom:'Aramaki (Ryokugyu)', section:'marines', prime:'N/A', statut:'Lieutenant de la Marine', relations:'', connaissances:'' },
+      kong:     { nom:'Kong',     section:'marines', prime:'N/A', statut:'Amiral en Chef Suprême', niveau:60, fluideOffensif:'avancé', fluidePerceptif:'basique', fluideRoyal:'basique', maitriseFluideOffensif:'expert', maitrisePerceptif:'expert', maitriseRoyal:'novice', statutCombat:'opérationnel', objectifActif:'', relations:[], connaissances:'', notes:'' },
+      sengoku:  { nom:'Sengoku',  section:'marines', prime:'N/A', statut:'Amiral de la Marine', niveau:55, fluideOffensif:'avancé', fluidePerceptif:'avancé', fluideRoyal:'basique', maitriseFluideOffensif:'expert', maitrisePerceptif:'expert', maitriseRoyal:'novice', statutCombat:'opérationnel', objectifActif:'', relations:[], connaissances:'', notes:'' },
+      tsuru:    { nom:'Tsuru',    section:'marines', prime:'N/A', statut:'Amirale de la Marine', niveau:50, fluideOffensif:'basique', fluidePerceptif:'basique', fluideRoyal:'aucun', maitriseFluideOffensif:'expert', maitrisePerceptif:'expert', maitriseRoyal:'aucun', statutCombat:'opérationnel', objectifActif:'', relations:[], connaissances:'', notes:'' },
+      zephyr:   { nom:'Zephyr',   section:'marines', prime:'N/A', statut:'Amiral de la Marine', niveau:52, fluideOffensif:'avancé', fluidePerceptif:'basique', fluideRoyal:'aucun', maitriseFluideOffensif:'expert', maitrisePerceptif:'intermédiaire', maitriseRoyal:'aucun', statutCombat:'opérationnel', objectifActif:'', relations:[], connaissances:'', notes:'' },
+      garp:     { nom:'Garp',     section:'marines', prime:'N/A', statut:'Vice-Amiral', niveau:65, fluideOffensif:'avancé', fluidePerceptif:'basique', fluideRoyal:'basique', maitriseFluideOffensif:'maître', maitrisePerceptif:'expert', maitriseRoyal:'intermédiaire', statutCombat:'opérationnel', objectifActif:'', relations:[], connaissances:'', notes:'' },
+      sakazuki: { nom:'Sakazuki (Akainu)',  section:'marines', prime:'N/A', statut:'Lieutenant de la Marine', niveau:40, fluideOffensif:'basique', fluidePerceptif:'basique', fluideRoyal:'aucun', maitriseFluideOffensif:'intermédiaire', maitrisePerceptif:'intermédiaire', maitriseRoyal:'aucun', statutCombat:'opérationnel', objectifActif:'', relations:[], connaissances:'', notes:'' },
+      kuzan:    { nom:'Kuzan (Aokiji)',     section:'marines', prime:'N/A', statut:'Lieutenant de la Marine', niveau:40, fluideOffensif:'basique', fluidePerceptif:'basique', fluideRoyal:'aucun', maitriseFluideOffensif:'intermédiaire', maitrisePerceptif:'intermédiaire', maitriseRoyal:'aucun', statutCombat:'opérationnel', objectifActif:'', relations:[], connaissances:'', notes:'' },
+      borsalino:{ nom:'Borsalino (Kizaru)', section:'marines', prime:'N/A', statut:'Lieutenant de la Marine', niveau:40, fluideOffensif:'basique', fluidePerceptif:'basique', fluideRoyal:'aucun', maitriseFluideOffensif:'intermédiaire', maitrisePerceptif:'intermédiaire', maitriseRoyal:'aucun', statutCombat:'opérationnel', objectifActif:'', relations:[], connaissances:'', notes:'' },
+      issho:    { nom:'Issho (Fujitora)',   section:'marines', prime:'N/A', statut:'Lieutenant de la Marine', niveau:38, fluideOffensif:'basique', fluidePerceptif:'avancé', fluideRoyal:'basique', maitriseFluideOffensif:'expert', maitrisePerceptif:'suprême', maitriseRoyal:'novice', statutCombat:'opérationnel', objectifActif:'', relations:[], connaissances:'', notes:'' },
+      aramaki:  { nom:'Aramaki (Ryokugyu)', section:'marines', prime:'N/A', statut:'Lieutenant de la Marine', niveau:38, fluideOffensif:'basique', fluidePerceptif:'basique', fluideRoyal:'aucun', maitriseFluideOffensif:'expert', maitrisePerceptif:'intermédiaire', maitriseRoyal:'aucun', statutCombat:'opérationnel', objectifActif:'', relations:[], connaissances:'', notes:'' },
+      // GOROSEI
+      saturn:   { nom:'Saint Jaygarcia Saturn',   section:'marines', prime:'N/A', statut:'Gorosei — Dieu Guerrier de la Science et de la Défense', niveau:90, fluideOffensif:'avancé', fluidePerceptif:'avancé', fluideRoyal:'suprême', maitriseFluideOffensif:'maître', maitrisePerceptif:'maître', maitriseRoyal:'maître', statutCombat:'opérationnel', objectifActif:'Éliminer Vegapunk, maintenir la domination du GM', relations:[], connaissances:'', notes:'Zoan Mythique Gyūki (taureau-araignée). Régénération totale. Regard mortel. Venin dans les jambes. Tué par Imu après Egghead — remplacé au poste par Garling.' },
+      mars:     { nom:'Saint Marcus Mars',        section:'marines', prime:'N/A', statut:'Gorosei — Dieu Guerrier de l\'Environnement', niveau:92, fluideOffensif:'avancé', fluidePerceptif:'avancé', fluideRoyal:'suprême', maitriseFluideOffensif:'maître', maitrisePerceptif:'maître', maitriseRoyal:'maître', statutCombat:'opérationnel', objectifActif:'', relations:[], connaissances:'', notes:'Zoan Mythique Itsumade (aigle-serpent géant). Rayon d\'énergie dévastateur depuis le bec. Vol. Régénération.' },
+      warcury:  { nom:'Saint Topman Warcury',     section:'marines', prime:'N/A', statut:'Gorosei — Dieu Guerrier de la Justice', niveau:91, fluideOffensif:'avancé', fluidePerceptif:'avancé', fluideRoyal:'suprême', maitriseFluideOffensif:'maître', maitrisePerceptif:'maître', maitriseRoyal:'maître', statutCombat:'opérationnel', objectifActif:'', relations:[], connaissances:'', notes:'Zoan Mythique Fengxi (sanglier monstrueux à 4 défenses). Taille d\'un navire. Puissance brute colossale. Spécialiste Fluide Royal avancé en rugissement.' },
+      nusjuro:  { nom:'Saint Ethanbaron V. Nusjuro', section:'marines', prime:'N/A', statut:'Gorosei — Dieu Guerrier des Finances', niveau:90, fluideOffensif:'avancé', fluidePerceptif:'avancé', fluideRoyal:'suprême', maitriseFluideOffensif:'maître', maitrisePerceptif:'maître', maitriseRoyal:'maître', statutCombat:'opérationnel', objectifActif:'', relations:[], connaissances:'', notes:'Zoan Mythique Bakotsu (cheval squelettique yōkai). Épéiste redoutable. Lame Kitetsu revêtue de Fluide Offensif.' },
+      juPeter:  { nom:'Saint Shepherd Ju Peter',  section:'marines', prime:'N/A', statut:'Gorosei — Dieu Guerrier de l\'Agriculture', niveau:90, fluideOffensif:'avancé', fluidePerceptif:'avancé', fluideRoyal:'suprême', maitriseFluideOffensif:'maître', maitrisePerceptif:'maître', maitriseRoyal:'maître', statutCombat:'opérationnel', objectifActif:'', relations:[], connaissances:'', notes:'Zoan Mythique Sandworm (ver des sables géant). Peut s\'enfouir dans n\'importe quelle surface. Corps serpentin destructeur.' },
+      garling:  { nom:'Saint Figarland Garling',  section:'marines', prime:'N/A', statut:'Gorosei — Dieu Guerrier de la Science et de la Défense (remplace Saturn)', niveau:88, fluideOffensif:'avancé', fluidePerceptif:'avancé', fluideRoyal:'avancé', maitriseFluideOffensif:'maître', maitrisePerceptif:'maître', maitriseRoyal:'maître', statutCombat:'opérationnel', objectifActif:'', relations:[], connaissances:'', notes:'Ex-Amiral de la Sainte Chevalerie. Épéiste d\'élite. Lié à Shanks par le sang selon les théories du manga.' },
       // CP0
-      lucci:    { nom:'Rob Lucci',  section:'marines', prime:'N/A', statut:'Agent CP0', relations:'', connaissances:'' },
-      kaku:     { nom:'Kaku',       section:'marines', prime:'N/A', statut:'Agent CP0', relations:'', connaissances:'' },
-      guernica: { nom:'Guernica',   section:'marines', prime:'N/A', statut:'Agent CP0', relations:'', connaissances:'' },
+      lucci:    { nom:'Rob Lucci',  section:'marines', prime:'N/A', statut:'Agent CP0', niveau:30, fluideOffensif:'basique', fluidePerceptif:'basique', fluideRoyal:'aucun', maitriseFluideOffensif:'intermédiaire', maitrisePerceptif:'intermédiaire', maitriseRoyal:'aucun', statutCombat:'opérationnel', objectifActif:'', relations:[], connaissances:'', notes:'' },
+      kaku:     { nom:'Kaku',       section:'marines', prime:'N/A', statut:'Agent CP0', niveau:22, fluideOffensif:'basique', fluidePerceptif:'basique', fluideRoyal:'aucun', maitriseFluideOffensif:'intermédiaire', maitrisePerceptif:'novice', maitriseRoyal:'aucun', statutCombat:'opérationnel', objectifActif:'', relations:[], connaissances:'', notes:'' },
+      guernica: { nom:'Guernica',   section:'marines', prime:'N/A', statut:'Agent CP0', niveau:20, fluideOffensif:'basique', fluidePerceptif:'aucun', fluideRoyal:'aucun', maitriseFluideOffensif:'intermédiaire', maitrisePerceptif:'aucun', maitriseRoyal:'aucun', statutCombat:'opérationnel', objectifActif:'', relations:[], connaissances:'', notes:'' },
       // EMPEREURS + équipages
-      kaidoE:   { nom:'Kaido',         section:'empereurs', prime:'4 600 000 000', statut:'Empereur — Capitaine Cent Bêtes', relations:'', connaissances:'' },
-      king:     { nom:'King',          section:'empereurs', prime:'1 390 000 000', statut:'All-Star équipage Kaido',         relations:'', connaissances:'' },
-      queen:    { nom:'Queen',         section:'empereurs', prime:'1 320 000 000', statut:'All-Star équipage Kaido',         relations:'', connaissances:'' },
-      jack:     { nom:'Jack',          section:'empereurs', prime:'1 000 000 000', statut:'All-Star équipage Kaido',         relations:'', connaissances:'' },
-      whos:     { nom:"Who's Who",     section:'empereurs', prime:'0',             statut:'Tobiroppo équipage Kaido',        relations:'', connaissances:'' },
-      blackMaria:{ nom:'Black Maria', section:'empereurs', prime:'0',             statut:'Tobiroppo équipage Kaido',        relations:'', connaissances:'' },
-      sasaki:   { nom:'Sasaki',        section:'empereurs', prime:'0',             statut:'Tobiroppo équipage Kaido',        relations:'', connaissances:'' },
-      ulti:     { nom:'Ulti',          section:'empereurs', prime:'0',             statut:'Tobiroppo équipage Kaido',        relations:'', connaissances:'' },
-      pageOne:  { nom:'Page One',      section:'empereurs', prime:'0',             statut:'Tobiroppo équipage Kaido',        relations:'', connaissances:'' },
-      xDrake:   { nom:'X Drake',       section:'empereurs', prime:'0',             statut:'Tobiroppo équipage Kaido',        relations:'', connaissances:'' },
-      bigMom:   { nom:'Big Mom',       section:'empereurs', prime:'4 388 000 000', statut:'Emperatrice — Charlotte Linlin', relations:'', connaissances:'' },
-      katakuri: { nom:'Katakuri',      section:'empereurs', prime:'1 057 000 000', statut:'Sweet Commander équipage Big Mom', relations:'', connaissances:'' },
-      smoothie: { nom:'Smoothie',      section:'empereurs', prime:'0',             statut:'Sweet Commander équipage Big Mom', relations:'', connaissances:'' },
-      cracker:  { nom:'Cracker',       section:'empereurs', prime:'860 000 000',   statut:'Sweet Commander équipage Big Mom', relations:'', connaissances:'' },
-      perospero:{ nom:'Perospero',     section:'empereurs', prime:'700 000 000',   statut:'Fils aîné équipage Big Mom',      relations:'', connaissances:'' },
-      barbe:    { nom:'Barbe Blanche', section:'empereurs', prime:'5 046 000 000', statut:'Empereur — Edward Newgate',       relations:'', connaissances:'' },
-      marco:    { nom:'Marco',         section:'empereurs', prime:'1 374 000 000', statut:'1ère Division équipage Barbe Blanche', relations:'', connaissances:'' },
-      ace:      { nom:'Ace',           section:'empereurs', prime:'550 000 000',   statut:'2ème Division équipage Barbe Blanche', relations:'', connaissances:'' },
-      jozu:     { nom:'Jozu',          section:'empereurs', prime:'0',             statut:'3ème Division équipage Barbe Blanche', relations:'', connaissances:'' },
-      thatch:   { nom:'Thatch',        section:'empereurs', prime:'0',             statut:'4ème Division équipage Barbe Blanche', relations:'', connaissances:'' },
-      vista:    { nom:'Vista',         section:'empereurs', prime:'0',             statut:'5ème Division équipage Barbe Blanche', relations:'', connaissances:'' },
-      izo:      { nom:'Izo',           section:'empereurs', prime:'0',             statut:'6ème Division équipage Barbe Blanche', relations:'', connaissances:'' },
-      shiki:    { nom:"Shiki (Lion d'Or)", section:'empereurs', prime:'0',        statut:'Empereur — Capitaine flotte dorée', relations:'', connaissances:'' },
-      indigo:   { nom:'Indigo',        section:'empereurs', prime:'0',             statut:'Scientifique en chef — flotte Shiki', relations:'', connaissances:'' },
-      scarlet:  { nom:'Scarlet',       section:'empereurs', prime:'0',             statut:'Lieutenante — flotte Shiki',          relations:'', connaissances:'' },
+      kaidoE:   { nom:'Kaido',         section:'empereurs', prime:'4 600 000 000', statut:'Empereur — Capitaine Cent Bêtes', niveau:85, fluideOffensif:'avancé', fluidePerceptif:'avancé', fluideRoyal:'avancé', maitriseFluideOffensif:'maître', maitrisePerceptif:'maître', maitriseRoyal:'maître', statutCombat:'opérationnel', objectifActif:'', relations:[], connaissances:'', notes:'' },
+      king:     { nom:'King',          section:'empereurs', prime:'1 390 000 000', statut:'All-Star équipage Kaido', niveau:60, fluideOffensif:'avancé', fluidePerceptif:'basique', fluideRoyal:'aucun', maitriseFluideOffensif:'maître', maitrisePerceptif:'intermédiaire', maitriseRoyal:'aucun', statutCombat:'opérationnel', objectifActif:'', relations:[], connaissances:'', notes:'' },
+      queen:    { nom:'Queen',         section:'empereurs', prime:'1 320 000 000', statut:'All-Star équipage Kaido', niveau:55, fluideOffensif:'avancé', fluidePerceptif:'basique', fluideRoyal:'aucun', maitriseFluideOffensif:'maître', maitrisePerceptif:'novice', maitriseRoyal:'aucun', statutCombat:'opérationnel', objectifActif:'', relations:[], connaissances:'', notes:'' },
+      jack:     { nom:'Jack',          section:'empereurs', prime:'1 000 000 000', statut:'All-Star équipage Kaido', niveau:50, fluideOffensif:'basique', fluidePerceptif:'aucun', fluideRoyal:'aucun', maitriseFluideOffensif:'expert', maitrisePerceptif:'aucun', maitriseRoyal:'aucun', statutCombat:'opérationnel', objectifActif:'', relations:[], connaissances:'', notes:'' },
+      whos:     { nom:"Who's Who",     section:'empereurs', prime:'0', statut:'Tobiroppo équipage Kaido', niveau:32, fluideOffensif:'basique', fluidePerceptif:'aucun', fluideRoyal:'aucun', maitriseFluideOffensif:'intermédiaire', maitrisePerceptif:'aucun', maitriseRoyal:'aucun', statutCombat:'opérationnel', objectifActif:'', relations:[], connaissances:'', notes:'' },
+      blackMaria:{ nom:'Black Maria', section:'empereurs', prime:'0', statut:'Tobiroppo équipage Kaido', niveau:30, fluideOffensif:'basique', fluidePerceptif:'aucun', fluideRoyal:'aucun', maitriseFluideOffensif:'intermédiaire', maitrisePerceptif:'aucun', maitriseRoyal:'aucun', statutCombat:'opérationnel', objectifActif:'', relations:[], connaissances:'', notes:'' },
+      sasaki:   { nom:'Sasaki',        section:'empereurs', prime:'0', statut:'Tobiroppo équipage Kaido', niveau:30, fluideOffensif:'basique', fluidePerceptif:'aucun', fluideRoyal:'aucun', maitriseFluideOffensif:'intermédiaire', maitrisePerceptif:'aucun', maitriseRoyal:'aucun', statutCombat:'opérationnel', objectifActif:'', relations:[], connaissances:'', notes:'' },
+      ulti:     { nom:'Ulti',          section:'empereurs', prime:'0', statut:'Tobiroppo équipage Kaido', niveau:28, fluideOffensif:'basique', fluidePerceptif:'aucun', fluideRoyal:'aucun', maitriseFluideOffensif:'novice', maitrisePerceptif:'aucun', maitriseRoyal:'aucun', statutCombat:'opérationnel', objectifActif:'', relations:[], connaissances:'', notes:'' },
+      pageOne:  { nom:'Page One',      section:'empereurs', prime:'0', statut:'Tobiroppo équipage Kaido', niveau:25, fluideOffensif:'basique', fluidePerceptif:'aucun', fluideRoyal:'aucun', maitriseFluideOffensif:'novice', maitrisePerceptif:'aucun', maitriseRoyal:'aucun', statutCombat:'opérationnel', objectifActif:'', relations:[], connaissances:'', notes:'' },
+      xDrake:   { nom:'X Drake',       section:'empereurs', prime:'0', statut:'Tobiroppo équipage Kaido', niveau:28, fluideOffensif:'basique', fluidePerceptif:'aucun', fluideRoyal:'aucun', maitriseFluideOffensif:'intermédiaire', maitrisePerceptif:'aucun', maitriseRoyal:'aucun', statutCombat:'opérationnel', objectifActif:'', relations:[], connaissances:'', notes:'' },
+      bigMom:   { nom:'Big Mom',       section:'empereurs', prime:'4 388 000 000', statut:'Emperatrice — Charlotte Linlin', niveau:83, fluideOffensif:'avancé', fluidePerceptif:'basique', fluideRoyal:'avancé', maitriseFluideOffensif:'maître', maitrisePerceptif:'expert', maitriseRoyal:'maître', statutCombat:'opérationnel', objectifActif:'', relations:[], connaissances:'', notes:'' },
+      katakuri: { nom:'Katakuri',      section:'empereurs', prime:'1 057 000 000', statut:'Sweet Commander équipage Big Mom', niveau:62, fluideOffensif:'avancé', fluidePerceptif:'avancé', fluideRoyal:'aucun', maitriseFluideOffensif:'maître', maitrisePerceptif:'suprême', maitriseRoyal:'aucun', statutCombat:'opérationnel', objectifActif:'', relations:[], connaissances:'', notes:'' },
+      smoothie: { nom:'Smoothie',      section:'empereurs', prime:'0', statut:'Sweet Commander équipage Big Mom', niveau:48, fluideOffensif:'basique', fluidePerceptif:'aucun', fluideRoyal:'aucun', maitriseFluideOffensif:'expert', maitrisePerceptif:'aucun', maitriseRoyal:'aucun', statutCombat:'opérationnel', objectifActif:'', relations:[], connaissances:'', notes:'' },
+      cracker:  { nom:'Cracker',       section:'empereurs', prime:'860 000 000', statut:'Sweet Commander équipage Big Mom', niveau:50, fluideOffensif:'basique', fluidePerceptif:'aucun', fluideRoyal:'aucun', maitriseFluideOffensif:'expert', maitrisePerceptif:'aucun', maitriseRoyal:'aucun', statutCombat:'opérationnel', objectifActif:'', relations:[], connaissances:'', notes:'' },
+      perospero:{ nom:'Perospero',     section:'empereurs', prime:'700 000 000', statut:'Fils aîné équipage Big Mom', niveau:40, fluideOffensif:'basique', fluidePerceptif:'aucun', fluideRoyal:'aucun', maitriseFluideOffensif:'intermédiaire', maitrisePerceptif:'aucun', maitriseRoyal:'aucun', statutCombat:'opérationnel', objectifActif:'', relations:[], connaissances:'', notes:'' },
+      barbe:    { nom:'Barbe Blanche', section:'empereurs', prime:'5 046 000 000', statut:'Empereur — Edward Newgate', niveau:88, fluideOffensif:'avancé', fluidePerceptif:'basique', fluideRoyal:'suprême', maitriseFluideOffensif:'maître', maitrisePerceptif:'expert', maitriseRoyal:'maître', statutCombat:'opérationnel', objectifActif:'', relations:[], connaissances:'', notes:'' },
+      marco:    { nom:'Marco',         section:'empereurs', prime:'1 374 000 000', statut:'1ère Division équipage Barbe Blanche', niveau:58, fluideOffensif:'avancé', fluidePerceptif:'basique', fluideRoyal:'aucun', maitriseFluideOffensif:'maître', maitrisePerceptif:'expert', maitriseRoyal:'aucun', statutCombat:'opérationnel', objectifActif:'', relations:[], connaissances:'', notes:'' },
+      ace:      { nom:'Ace',           section:'empereurs', prime:'550 000 000', statut:'2ème Division équipage Barbe Blanche', niveau:40, fluideOffensif:'basique', fluidePerceptif:'basique', fluideRoyal:'aucun', maitriseFluideOffensif:'intermédiaire', maitrisePerceptif:'novice', maitriseRoyal:'aucun', statutCombat:'opérationnel', objectifActif:'', relations:[], connaissances:'', notes:'' },
+      jozu:     { nom:'Jozu',          section:'empereurs', prime:'0', statut:'3ème Division équipage Barbe Blanche', niveau:38, fluideOffensif:'basique', fluidePerceptif:'aucun', fluideRoyal:'aucun', maitriseFluideOffensif:'expert', maitrisePerceptif:'aucun', maitriseRoyal:'aucun', statutCombat:'opérationnel', objectifActif:'', relations:[], connaissances:'', notes:'' },
+      thatch:   { nom:'Thatch',        section:'empereurs', prime:'0', statut:'4ème Division équipage Barbe Blanche', niveau:32, fluideOffensif:'basique', fluidePerceptif:'aucun', fluideRoyal:'aucun', maitriseFluideOffensif:'intermédiaire', maitrisePerceptif:'aucun', maitriseRoyal:'aucun', statutCombat:'opérationnel', objectifActif:'', relations:[], connaissances:'', notes:'' },
+      vista:    { nom:'Vista',         section:'empereurs', prime:'0', statut:'5ème Division équipage Barbe Blanche', niveau:35, fluideOffensif:'basique', fluidePerceptif:'basique', fluideRoyal:'aucun', maitriseFluideOffensif:'intermédiaire', maitrisePerceptif:'novice', maitriseRoyal:'aucun', statutCombat:'opérationnel', objectifActif:'', relations:[], connaissances:'', notes:'' },
+      izo:      { nom:'Izo',           section:'empereurs', prime:'0', statut:'6ème Division équipage Barbe Blanche', niveau:30, fluideOffensif:'basique', fluidePerceptif:'aucun', fluideRoyal:'aucun', maitriseFluideOffensif:'intermédiaire', maitrisePerceptif:'aucun', maitriseRoyal:'aucun', statutCombat:'opérationnel', objectifActif:'', relations:[], connaissances:'', notes:'' },
+      shiki:    { nom:"Shiki (Lion d'Or)", section:'empereurs', prime:'0', statut:'Empereur — Capitaine flotte dorée', niveau:80, fluideOffensif:'avancé', fluidePerceptif:'basique', fluideRoyal:'basique', maitriseFluideOffensif:'maître', maitrisePerceptif:'expert', maitriseRoyal:'intermédiaire', statutCombat:'opérationnel', objectifActif:'', relations:[], connaissances:'', notes:'' },
+      indigo:   { nom:'Indigo',        section:'empereurs', prime:'0', statut:'Scientifique en chef — flotte Shiki', niveau:20, fluideOffensif:'aucun', fluidePerceptif:'aucun', fluideRoyal:'aucun', maitriseFluideOffensif:'aucun', maitrisePerceptif:'aucun', maitriseRoyal:'aucun', statutCombat:'opérationnel', objectifActif:'', relations:[], connaissances:'', notes:'' },
+      scarlet:  { nom:'Scarlet',       section:'empereurs', prime:'0', statut:'Lieutenante — flotte Shiki', niveau:22, fluideOffensif:'basique', fluidePerceptif:'aucun', fluideRoyal:'aucun', maitriseFluideOffensif:'novice', maitrisePerceptif:'aucun', maitriseRoyal:'aucun', statutCombat:'opérationnel', objectifActif:'', relations:[], connaissances:'', notes:'' },
       // 7 GRANDS CORSAIRES
-      crocodile:  { nom:'Crocodile',         section:'corsaires', prime:'81 000 000',  statut:'Grand Corsaire', relations:'', connaissances:'' },
-      doflamingo: { nom:'Doflamingo',        section:'corsaires', prime:'340 000 000', statut:'Grand Corsaire', relations:'', connaissances:'' },
-      mihawk:     { nom:'Dracule Mihawk',    section:'corsaires', prime:'N/A (champion)', statut:'Grand Corsaire — Meilleur épéiste', relations:'', connaissances:'' },
-      moriah:     { nom:'Gecko Moriah',      section:'corsaires', prime:'320 000 000', statut:'Grand Corsaire', relations:'', connaissances:'' },
-      hancock:    { nom:'Boa Hancock',       section:'corsaires', prime:'80 000 000',  statut:'Grande Corsaire — Impératrice Serpent', relations:'', connaissances:'' },
-      jinbe:      { nom:'Jinbe',             section:'corsaires', prime:'250 000 000', statut:'Grand Corsaire', relations:'', connaissances:'' },
-      kuma:       { nom:'Bartholomew Kuma',  section:'corsaires', prime:'296 000 000', statut:'Grand Corsaire', relations:'', connaissances:'' }
+      crocodile:  { nom:'Crocodile',         section:'corsaires', prime:'81 000 000', statut:'Grand Corsaire', niveau:42, fluideOffensif:'basique', fluidePerceptif:'basique', fluideRoyal:'aucun', maitriseFluideOffensif:'expert', maitrisePerceptif:'novice', maitriseRoyal:'aucun', statutCombat:'opérationnel', objectifActif:'', relations:[], connaissances:'', notes:'' },
+      doflamingo: { nom:'Doflamingo',        section:'corsaires', prime:'340 000 000', statut:'Grand Corsaire', niveau:46, fluideOffensif:'basique', fluidePerceptif:'basique', fluideRoyal:'avancé', maitriseFluideOffensif:'expert', maitrisePerceptif:'intermédiaire', maitriseRoyal:'intermédiaire', statutCombat:'opérationnel', objectifActif:'', relations:[], connaissances:'', notes:'' },
+      mihawk:     { nom:'Dracule Mihawk',    section:'corsaires', prime:'N/A (champion)', statut:'Grand Corsaire — Meilleur épéiste', niveau:58, fluideOffensif:'avancé', fluidePerceptif:'avancé', fluideRoyal:'aucun', maitriseFluideOffensif:'maître', maitrisePerceptif:'maître', maitriseRoyal:'aucun', statutCombat:'opérationnel', objectifActif:'', relations:[], connaissances:'', notes:'' },
+      moriah:     { nom:'Gecko Moriah',      section:'corsaires', prime:'320 000 000', statut:'Grand Corsaire', niveau:38, fluideOffensif:'aucun', fluidePerceptif:'aucun', fluideRoyal:'aucun', maitriseFluideOffensif:'aucun', maitrisePerceptif:'aucun', maitriseRoyal:'aucun', statutCombat:'opérationnel', objectifActif:'', relations:[], connaissances:'', notes:'' },
+      hancock:    { nom:'Boa Hancock',       section:'corsaires', prime:'80 000 000', statut:'Grande Corsaire — Impératrice Serpent', niveau:44, fluideOffensif:'basique', fluidePerceptif:'basique', fluideRoyal:'avancé', maitriseFluideOffensif:'expert', maitrisePerceptif:'expert', maitriseRoyal:'intermédiaire', statutCombat:'opérationnel', objectifActif:'', relations:[], connaissances:'', notes:'' },
+      jinbe:      { nom:'Jinbe',             section:'corsaires', prime:'250 000 000', statut:'Grand Corsaire', niveau:45, fluideOffensif:'basique', fluidePerceptif:'basique', fluideRoyal:'aucun', maitriseFluideOffensif:'expert', maitrisePerceptif:'expert', maitriseRoyal:'aucun', statutCombat:'opérationnel', objectifActif:'', relations:[], connaissances:'', notes:'' },
+      kuma:       { nom:'Bartholomew Kuma',  section:'corsaires', prime:'296 000 000', statut:'Grand Corsaire', niveau:42, fluideOffensif:'basique', fluidePerceptif:'aucun', fluideRoyal:'aucun', maitriseFluideOffensif:'expert', maitrisePerceptif:'aucun', maitriseRoyal:'aucun', statutCombat:'opérationnel', objectifActif:'', relations:[], connaissances:'', notes:'' }
     }
   },
   cfg: {
@@ -985,6 +1080,13 @@ function bindEvents() {
     if (e.target === document.getElementById('modalCrewAI')) closeModal('modalCrewAI');
   });
   document.getElementById('btnSaveCrew').addEventListener('click', saveCrewFromUI);
+  document.getElementById('btnNewChar').addEventListener('click', () => openNewCharModal('__new__'));
+  document.getElementById('btnCancelNewChar').addEventListener('click', () => closeModal('modalNewChar'));
+  document.getElementById('btnConfirmNewChar').addEventListener('click', confirmNewChar);
+  document.getElementById('btnDeleteChar').addEventListener('click', deleteCustomChar);
+  document.getElementById('modalNewChar').addEventListener('click', e => {
+    if (e.target === document.getElementById('modalNewChar')) closeModal('modalNewChar');
+  });
 
   // Modal: Lore AI
   document.getElementById('btnCancelLoreAI').addEventListener('click', () => closeModal('modalLoreAI'));
@@ -1505,8 +1607,8 @@ function delTlEvent(i) {
 // ================================================================
 // GEMINI API — BUG FIX: frequency_penalty now sent
 // ================================================================
-// Models that support frequencyPenalty
-const PENALTY_MODELS = ['gemini-1.5-pro','gemini-1.5-flash'];
+// Models that support frequencyPenalty (shutdowned models removed)
+const PENALTY_MODELS = ['gemini-2.5-flash', 'gemini-2.5-flash-lite', 'gemini-3.1-flash-lite'];
 
 async function callGemini(messages, jsonMode=false, _depth=0) {
   const idx = getKey();
@@ -1551,8 +1653,18 @@ async function callGemini(messages, jsonMode=false, _depth=0) {
 }
 
 // ================================================================
-// CREW STATE — nouveau système par personnage
+// CREW STATE — Fix 27 — nouveau système par personnage
 // ================================================================
+
+function getRang(niveau) {
+  const n = parseInt(niveau) || 1;
+  if (n <= 15) return 'Inconnu';
+  if (n <= 30) return 'Émergent';
+  if (n <= 45) return 'Dangereux';
+  if (n <= 60) return 'Redoutable';
+  if (n <= 75) return 'Légendaire';
+  return 'Transcendant';
+}
 
 /* SECTION NAV */
 function initCharNav() {
@@ -1572,29 +1684,98 @@ function getCharsBySection(section) {
 }
 
 function renderCharCard(ch, isPrime) {
-  const noPrime = (ch.section === 'marines') || ch.prime === 'N/A';
+  const noPrime = (ch.section === 'marines') || ch.prime === 'N/A' || ch.prime === 'N/A (champion)';
+  const rang = getRang(ch.niveau || 1);
+  const relStr = Array.isArray(ch.relations)
+    ? ch.relations.map(r => `${r.tag} → ${r.cible}`).join(' / ')
+    : (ch.relations || '');
+  const isCustom = String(ch.key).startsWith('custom_');
   return `
     <div class="card" style="margin-bottom:10px" data-char-key="${escHtml(ch.key)}">
-      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
-        <span style="font-family:'Pirata One',cursive;font-size:14px;color:var(--gold);letter-spacing:1px">${escHtml(ch.nom)}</span>
-        <span style="font-size:10px;color:var(--text3);font-family:'Rye',serif">${escHtml(ch.statut)}</span>
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;gap:8px">
+        <span style="font-family:'Pirata One',cursive;font-size:14px;color:var(--gold);letter-spacing:1px;flex:1">${escHtml(ch.nom)}</span>
+        <span style="font-size:9px;color:var(--text3);font-family:'Rye',serif;flex-shrink:0">${escHtml(ch.statut)}</span>
+        ${isCustom ? `<button class="btn btnRed btnSm" style="min-height:28px;padding:4px 8px;font-size:8px" data-char-delete="${escHtml(ch.key)}">✕</button>` : ''}
       </div>
-      ${!noPrime ? `<div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
-        <span style="font-family:'Rye',serif;font-size:9px;color:var(--text3);white-space:nowrap">PRIME</span>
-        <input type="text" class="charField" data-char="${escHtml(ch.key)}" data-field="prime" value="${escHtml(ch.prime)}" placeholder="0 Berry" style="font-size:13px;padding:6px 10px;flex:1">
-        <span style="font-size:10px;color:var(--text3)">Berry</span>
-      </div>` : ''}
+      <!-- NIVEAU + RANG -->
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
+        <span style="font-family:'Rye',serif;font-size:9px;color:var(--text3);white-space:nowrap">NVL</span>
+        <input type="number" min="1" max="100" class="charField" data-char="${escHtml(ch.key)}" data-field="niveau" value="${escHtml(String(ch.niveau||1))}" style="font-size:13px;padding:6px 10px;width:70px;flex:0 0 70px">
+        <span style="font-size:11px;color:var(--gold2);font-family:'Rye',serif;letter-spacing:1px">${rang}</span>
+        ${!noPrime ? `<span style="font-family:'Rye',serif;font-size:9px;color:var(--text3);margin-left:auto;white-space:nowrap">PRIME</span>
+        <input type="text" class="charField" data-char="${escHtml(ch.key)}" data-field="prime" value="${escHtml(ch.prime)}" placeholder="0 Berry" style="font-size:12px;padding:6px 8px;width:110px;flex:0 0 110px">` : ''}
+      </div>
+      <!-- FLUIDES EN GRILLE -->
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;margin-bottom:8px">
+        <div>
+          <div class="inputLabel" style="margin-bottom:2px">Offensif</div>
+          <select class="charField" data-char="${escHtml(ch.key)}" data-field="fluideOffensif" style="font-size:11px;padding:4px 6px">
+            ${['aucun','basique','avancé'].map(v=>`<option value="${v}"${ch.fluideOffensif===v?' selected':''}>${v}</option>`).join('')}
+          </select>
+        </div>
+        <div>
+          <div class="inputLabel" style="margin-bottom:2px">Perceptif</div>
+          <select class="charField" data-char="${escHtml(ch.key)}" data-field="fluidePerceptif" style="font-size:11px;padding:4px 6px">
+            ${['aucun','basique','avancé','suprême'].map(v=>`<option value="${v}"${ch.fluidePerceptif===v?' selected':''}>${v}</option>`).join('')}
+          </select>
+        </div>
+        <div>
+          <div class="inputLabel" style="margin-bottom:2px">Royal</div>
+          <select class="charField" data-char="${escHtml(ch.key)}" data-field="fluideRoyal" style="font-size:11px;padding:4px 6px">
+            ${['aucun','basique','avancé','suprême'].map(v=>`<option value="${v}"${ch.fluideRoyal===v?' selected':''}>${v}</option>`).join('')}
+          </select>
+        </div>
+      </div>
+      <!-- MAÎTRISE EN GRILLE -->
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;margin-bottom:8px">
+        <div>
+          <div class="inputLabel" style="margin-bottom:2px;font-size:9px;letter-spacing:0">Maît. off.</div>
+          <select class="charField" data-char="${escHtml(ch.key)}" data-field="maitriseFluideOffensif" style="font-size:10px;padding:4px 4px">
+            ${['incontrôlé','novice','intermédiaire','expert','maître'].map(v=>`<option value="${v}"${ch.maitriseFluideOffensif===v?' selected':''}>${v}</option>`).join('')}
+          </select>
+        </div>
+        <div>
+          <div class="inputLabel" style="margin-bottom:2px;font-size:9px;letter-spacing:0">Maît. per.</div>
+          <select class="charField" data-char="${escHtml(ch.key)}" data-field="maitrisePerceptif" style="font-size:10px;padding:4px 4px">
+            ${['incontrôlé','novice','intermédiaire','expert','maître','suprême'].map(v=>`<option value="${v}"${ch.maitrisePerceptif===v?' selected':''}>${v}</option>`).join('')}
+          </select>
+        </div>
+        <div>
+          <div class="inputLabel" style="margin-bottom:2px;font-size:9px;letter-spacing:0">Maît. royal</div>
+          <select class="charField" data-char="${escHtml(ch.key)}" data-field="maitriseRoyal" style="font-size:10px;padding:4px 4px">
+            ${['aucun','incontrôlé','novice','intermédiaire','expert','maître'].map(v=>`<option value="${v}"${ch.maitriseRoyal===v?' selected':''}>${v}</option>`).join('')}
+          </select>
+        </div>
+      </div>
+      <!-- STATUT COMBAT + OBJECTIF -->
+      <div style="display:flex;gap:8px;margin-bottom:6px">
+        <div style="flex:1">
+          <div class="inputLabel" style="margin-bottom:2px">Statut combat</div>
+          <select class="charField" data-char="${escHtml(ch.key)}" data-field="statutCombat" style="font-size:12px;padding:5px 8px">
+            ${['opérationnel','blessé','gravement blessé','hors combat'].map(v=>`<option value="${v}"${ch.statutCombat===v?' selected':''}>${v}</option>`).join('')}
+          </select>
+        </div>
+        <div style="flex:1">
+          <div class="inputLabel" style="margin-bottom:2px">Objectif actif</div>
+          <input type="text" class="charField" data-char="${escHtml(ch.key)}" data-field="objectifActif" value="${escHtml(ch.objectifActif||'')}" placeholder="ex: traque RedFORCE…" style="font-size:12px;padding:5px 8px">
+        </div>
+      </div>
+      <!-- STATUT / RANG + NOTES (si custom: fruit aussi) -->
       <div style="margin-bottom:6px">
         <div class="inputLabel" style="margin-bottom:3px">Statut / Rang actuel</div>
         <input type="text" class="charField" data-char="${escHtml(ch.key)}" data-field="statut" value="${escHtml(ch.statut)}" style="font-size:13px;padding:6px 10px">
       </div>
+      ${isCustom ? `<div style="margin-bottom:6px">
+        <div class="inputLabel" style="margin-bottom:3px">Fruit du démon</div>
+        <input type="text" class="charField" data-char="${escHtml(ch.key)}" data-field="notes" value="${escHtml(ch.notes||'')}" placeholder="ex: Logia - sable…" style="font-size:13px;padding:6px 10px">
+      </div>` : ''}
       <div style="margin-bottom:6px">
-        <div class="inputLabel" style="margin-bottom:3px">Relations connues</div>
-        <textarea class="charField" data-char="${escHtml(ch.key)}" data-field="relations" rows="2" style="font-size:13px;padding:6px 10px;line-height:1.5">${escHtml(ch.relations)}</textarea>
+        <div class="inputLabel" style="margin-bottom:3px">Relations</div>
+        <input type="text" class="charField" data-char="${escHtml(ch.key)}" data-field="relationsStr" value="${escHtml(relStr)}" placeholder="ex: Rival → Mihawk / Respecte → Barbe Blanche" style="font-size:12px;padding:6px 10px">
       </div>
       <div>
         <div class="inputLabel" style="margin-bottom:3px">Ce que ce personnage sait</div>
-        <textarea class="charField" data-char="${escHtml(ch.key)}" data-field="connaissances" rows="3" style="font-size:13px;padding:6px 10px;line-height:1.5" placeholder="Uniquement ce qui lui a été révélé en jeu…">${escHtml(ch.connaissances)}</textarea>
+        <textarea class="charField" data-char="${escHtml(ch.key)}" data-field="connaissances" rows="3" style="font-size:13px;padding:6px 10px;line-height:1.5" placeholder="Uniquement ce qui lui a été révélé en jeu…">${escHtml(ch.connaissances||'')}</textarea>
       </div>
     </div>`;
 }
@@ -1624,8 +1805,11 @@ function renderCrew() {
     const highCmd = ['kong','sengoku','tsuru','zephyr','garp'];
     const prodiges = ['sakazuki','kuzan','borsalino','issho','aramaki'];
     const cp0 = ['lucci','kaku','guernica'];
+    const gorosei = ['saturn','mars','warcury','nusjuro','juPeter','garling'];
     const chars = S.crew.characters;
     marGrid.innerHTML =
+      renderGroupHeader('Gorosei — Dieux Guerriers (Gouvernement Mondial)', 'var(--red2)') +
+      gorosei.filter(k => chars[k]).map(k => renderCharCard({key:k,...chars[k]})).join('') +
       renderGroupHeader('Commandement Suprême', 'var(--text2)') +
       highCmd.filter(k => chars[k]).map(k => renderCharCard({key:k,...chars[k]})).join('') +
       renderGroupHeader('Prodiges de la Marine (futurs Amiraux)', 'var(--blue2)') +
@@ -1661,12 +1845,48 @@ function renderCrew() {
       .filter(k => chars[k]).map(k => renderCharCard({key:k,...chars[k]})).join('');
   }
 
+  // AUTRES — personnages custom
+  const autGrid = document.getElementById('charGrid-autres');
+  if (autGrid) {
+    const customs = Object.entries(S.crew.characters)
+      .filter(([k,v]) => v.section === 'autres')
+      .map(([k,v]) => ({key:k, ...v}));
+    autGrid.innerHTML = customs.length ? customs.map(ch => renderCharCard(ch)).join('') :
+      '<div class="emptyState">Aucun personnage custom.<br>Clique sur ➕ Nouveau personnage.</div>';
+  }
+
   // Bind live fields
   document.querySelectorAll('.charField').forEach(el => {
     el.addEventListener('change', () => {
       const key = el.dataset.char;
       const field = el.dataset.field;
-      if (S.crew.characters[key]) S.crew.characters[key][field] = el.value.trim();
+      if (!S.crew.characters[key]) return;
+      if (field === 'relationsStr') {
+        // Parse "Tag → Cible / Tag → Cible" format into array
+        S.crew.characters[key].relations = el.value.trim()
+          ? el.value.split('/').map(s => {
+              const parts = s.trim().split('→');
+              return parts.length === 2 ? { tag: parts[0].trim(), cible: parts[1].trim() } : null;
+            }).filter(Boolean)
+          : [];
+      } else {
+        S.crew.characters[key][field] = el.value.trim();
+      }
+    });
+  });
+
+  // Bind delete buttons for custom characters
+  document.querySelectorAll('[data-char-delete]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const key = btn.dataset.charDelete;
+      if (!S.crew.characters[key]) return;
+      const nom = S.crew.characters[key].nom;
+      if (confirm(`Supprimer ${nom} ?`)) {
+        delete S.crew.characters[key];
+        renderCrew();
+        save();
+        toast(`${nom} supprimé`);
+      }
     });
   });
 }
@@ -1683,7 +1903,15 @@ function saveCrewFromUI() {
   document.querySelectorAll('.charField').forEach(el => {
     const key = el.dataset.char;
     const field = el.dataset.field;
-    if (key && field && S.crew.characters[key]) {
+    if (!key || !field || !S.crew.characters[key]) return;
+    if (field === 'relationsStr') {
+      S.crew.characters[key].relations = el.value.trim()
+        ? el.value.split('/').map(s => {
+            const parts = s.trim().split('→');
+            return parts.length === 2 ? { tag: parts[0].trim(), cible: parts[1].trim() } : null;
+          }).filter(Boolean)
+        : [];
+    } else {
       S.crew.characters[key][field] = el.value.trim();
     }
   });
@@ -1714,12 +1942,38 @@ Chaque personnage ne connaît QUE ce qui est listé dans sa case "Ce que ce pers
 Si la case est vide → le personnage ne sait RIEN au-delà du sens commun de son vécu.\n\n`;
 
   for (const [key, ch] of Object.entries(chars)) {
-    const hasInfo = ch.relations || ch.connaissances;
+    const niv = parseInt(ch.niveau) || 1;
+    const rang = getRang(niv);
+    // Build capacités line
+    const caps = [];
+    if (ch.fluideOffensif && ch.fluideOffensif !== 'aucun') {
+      const m = ch.maitriseFluideOffensif || 'novice';
+      caps.push(`fluide offensif ${ch.fluideOffensif} (${m})`);
+    }
+    if (ch.fluidePerceptif && ch.fluidePerceptif !== 'aucun') {
+      const m = ch.maitrisePerceptif || 'novice';
+      caps.push(`fluide perceptif ${ch.fluidePerceptif} (${m})`);
+    }
+    if (ch.fluideRoyal && ch.fluideRoyal !== 'aucun') {
+      const m = ch.maitriseRoyal || 'incontrôlé';
+      caps.push(`fluide royal ${ch.fluideRoyal} (${m})`);
+    }
+    // Relations
+    const relArr = Array.isArray(ch.relations) ? ch.relations : [];
+    const relLine = relArr.length ? relArr.map(r => `${r.tag} → ${r.cible}`).join(' / ') : '';
+
+    const hasInfo = ch.connaissances || ch.objectifActif || relLine || ch.statut || caps.length > 0;
     if (!hasInfo) continue;
     ctx += `[${ch.nom}]\n`;
+    ctx += `Niveau : ${niv} (${rang})`;
+    if (caps.length) ctx += ` | ${caps.join(' | ')}`;
+    ctx += '\n';
     if (ch.statut) ctx += `Statut : ${ch.statut}\n`;
-    if (ch.relations) ctx += `Relations : ${ch.relations}\n`;
+    if (ch.statutCombat && ch.statutCombat !== 'opérationnel') ctx += `Combat : ${ch.statutCombat}\n`;
+    if (ch.objectifActif) ctx += `Objectif : ${ch.objectifActif}\n`;
+    if (relLine) ctx += `Relations : ${relLine}\n`;
     if (ch.connaissances) ctx += `Sait : ${ch.connaissances}\n`;
+    if (ch.notes) ctx += `Notes : ${ch.notes}\n`;
     ctx += '\n';
   }
 
@@ -1735,7 +1989,20 @@ async function updateCrewAI() {
 
   const rfChars = Object.entries(S.crew.characters)
     .filter(([k,v]) => v.section === 'redforce')
-    .map(([k,v]) => ({ key: k, nom: v.nom, prime: v.prime, statut: v.statut, relations: v.relations, connaissances: v.connaissances }));
+    .map(([k,v]) => ({
+      key: k, nom: v.nom, prime: v.prime, statut: v.statut,
+      niveau: v.niveau || 1,
+      fluideOffensif: v.fluideOffensif || 'basique',
+      maitriseFluideOffensif: v.maitriseFluideOffensif || 'novice',
+      fluidePerceptif: v.fluidePerceptif || 'aucun',
+      maitrisePerceptif: v.maitrisePerceptif || 'novice',
+      fluideRoyal: v.fluideRoyal || 'aucun',
+      maitriseRoyal: v.maitriseRoyal || 'incontrôlé',
+      statutCombat: v.statutCombat || 'opérationnel',
+      objectifActif: v.objectifActif || '',
+      relations: Array.isArray(v.relations) ? v.relations : [],
+      connaissances: v.connaissances || ''
+    }));
 
   const currentState = JSON.stringify({
     reputation: S.crew.reputation,
@@ -1755,8 +2022,14 @@ ${currentState}
 "reputation" → Perception EXTERNE de l'équipage par le monde.
 "marineStatus" → Statut administratif officiel vis-à-vis de la Marine.
 "islesVisitees" → Îles physiquement traversées.
-"connaissances" de chaque membre → CE QUE CE PERSONNAGE SPÉCIFIQUEMENT sait. UNIQUEMENT ce qui est logiquement justifié par l'événement décrit. PAS de haki/fluide/technique ajouté sauf si explicitement découvert en scène.
+"connaissances" → CE QUE CE PERSONNAGE SPÉCIFIQUEMENT sait. UNIQUEMENT ce qui est logiquement justifié par l'événement décrit. PAS de haki/fluide/technique ajouté sauf si explicitement découvert en scène.
 "prime" → Prime Berry (nombre ou "0").
+"niveau" → Niveau de puissance 1–100 (NE JAMAIS changer sauf si l'utilisateur le précise explicitement).
+"fluideOffensif/perceptif/royal" → aucun | basique | avancé | suprême. NE JAMAIS changer sans validation explicite.
+"maitriseFluideOffensif/maitrisePerceptif/maitriseRoyal" → incontrôlé | novice | intermédiaire | expert | maître. NE JAMAIS changer sans validation explicite.
+"statutCombat" → opérationnel | blessé | gravement blessé | hors combat. Mettre à jour selon l'événement.
+"objectifActif" → mission ou objectif actuel du personnage.
+"relations" → tableau [{tag, cible}]. Tags: Allié | Ennemi | Rival | Neutre | Méfiant | Respecte | Craint | Ignore.
 
 Mets à jour UNIQUEMENT ce qui change suite à l'événement. Réponds UNIQUEMENT en JSON valide, sans balises markdown.
 Format exact :
@@ -1764,7 +2037,7 @@ Format exact :
   "reputation": "...",
   "marineStatus": "...",
   "islesVisitees": "...",
-  "membres": [{"key":"shanks","prime":"0","statut":"...","relations":"...","connaissances":"..."},...]
+  "membres": [{"key":"shanks","prime":"0","statut":"...","niveau":5,"fluideOffensif":"basique","maitriseFluideOffensif":"novice","fluidePerceptif":"aucun","maitrisePerceptif":"novice","fluideRoyal":"basique","maitriseRoyal":"incontrôlé","statutCombat":"opérationnel","objectifActif":"","relations":[],"connaissances":"..."},...]
 }`;
 
   try {
@@ -1778,10 +2051,10 @@ Format exact :
       parsed.membres.forEach(m => {
         if (m.key && S.crew.characters[m.key]) {
           const c = S.crew.characters[m.key];
-          if (m.prime !== undefined) c.prime = m.prime;
-          if (m.statut !== undefined) c.statut = m.statut;
-          if (m.relations !== undefined) c.relations = m.relations;
-          if (m.connaissances !== undefined) c.connaissances = m.connaissances;
+          const fields = ['prime','statut','niveau','fluideOffensif','maitriseFluideOffensif',
+            'fluidePerceptif','maitrisePerceptif','fluideRoyal','maitriseRoyal',
+            'statutCombat','objectifActif','relations','connaissances'];
+          fields.forEach(f => { if (m[f] !== undefined) c[f] = m[f]; });
         }
       });
     }
@@ -1797,8 +2070,92 @@ Format exact :
 }
 
 // ================================================================
-// SYSTEM PROMPT
+// CUSTOM CHARACTERS
 // ================================================================
+function openNewCharModal(key) {
+  const isEdit = key !== '__new__';
+  document.getElementById('ncKey').value = key;
+  document.getElementById('modalNewCharTitle').textContent = isEdit ? 'MODIFIER PERSONNAGE' : 'NOUVEAU PERSONNAGE';
+  document.getElementById('btnConfirmNewChar').textContent = isEdit ? 'Sauvegarder' : 'Créer';
+  document.getElementById('btnDeleteChar').style.display = isEdit ? '' : 'none';
+  if (isEdit && S.crew.characters[key]) {
+    const ch = S.crew.characters[key];
+    document.getElementById('ncNom').value = ch.nom || '';
+    document.getElementById('ncNiveau').value = ch.niveau || 1;
+    document.getElementById('ncStatut').value = ch.statut || '';
+    document.getElementById('ncFluideOff').value = ch.fluideOffensif || 'basique';
+    document.getElementById('ncMaitriseOff').value = ch.maitriseFluideOffensif || 'novice';
+    document.getElementById('ncFluidePer').value = ch.fluidePerceptif || 'aucun';
+    document.getElementById('ncFluideRoy').value = ch.fluideRoyal || 'aucun';
+    document.getElementById('ncFruit').value = ch.notes || '';
+    document.getElementById('ncStatutCombat').value = ch.statutCombat || 'opérationnel';
+    document.getElementById('ncObjectif').value = ch.objectifActif || '';
+    document.getElementById('ncConnaissances').value = ch.connaissances || '';
+    document.getElementById('ncNotes').value = ch.notes || '';
+  } else {
+    document.getElementById('ncNom').value = '';
+    document.getElementById('ncNiveau').value = 1;
+    document.getElementById('ncStatut').value = '';
+    document.getElementById('ncFluideOff').value = 'basique';
+    document.getElementById('ncMaitriseOff').value = 'novice';
+    document.getElementById('ncFluidePer').value = 'aucun';
+    document.getElementById('ncFluideRoy').value = 'aucun';
+    document.getElementById('ncFruit').value = '';
+    document.getElementById('ncStatutCombat').value = 'opérationnel';
+    document.getElementById('ncObjectif').value = '';
+    document.getElementById('ncConnaissances').value = '';
+    document.getElementById('ncNotes').value = '';
+  }
+  openModal('modalNewChar');
+}
+
+function confirmNewChar() {
+  const nom = document.getElementById('ncNom').value.trim();
+  if (!nom) { toast('Nom requis'); return; }
+  const key = document.getElementById('ncKey').value;
+  const isEdit = key !== '__new__';
+  const charKey = isEdit ? key : 'custom_' + Date.now();
+  S.crew.characters[charKey] = {
+    nom,
+    section: 'autres',
+    prime: '0',
+    statut: document.getElementById('ncStatut').value.trim(),
+    niveau: parseInt(document.getElementById('ncNiveau').value) || 1,
+    fluideOffensif: document.getElementById('ncFluideOff').value,
+    maitriseFluideOffensif: document.getElementById('ncMaitriseOff').value,
+    fluidePerceptif: document.getElementById('ncFluidePer').value,
+    maitrisePerceptif: 'novice',
+    fluideRoyal: document.getElementById('ncFluideRoy').value,
+    maitriseRoyal: 'incontrôlé',
+    statutCombat: document.getElementById('ncStatutCombat').value,
+    objectifActif: document.getElementById('ncObjectif').value.trim(),
+    relations: [],
+    connaissances: document.getElementById('ncConnaissances').value.trim(),
+    notes: document.getElementById('ncFruit').value.trim()
+  };
+  closeModal('modalNewChar');
+  // Switch to AUTRES section
+  document.querySelectorAll('.charNavBtn').forEach(b => b.classList.remove('active'));
+  document.querySelector('[data-section="autres"]').classList.add('active');
+  document.querySelectorAll('.charSection').forEach(s => s.style.display = 'none');
+  document.getElementById('charSection-autres').style.display = 'block';
+  renderCrew();
+  save();
+  toast(isEdit ? `${nom} mis à jour ✓` : `${nom} créé ✓`);
+}
+
+function deleteCustomChar() {
+  const key = document.getElementById('ncKey').value;
+  if (!key || key === '__new__' || !S.crew.characters[key]) return;
+  const nom = S.crew.characters[key].nom;
+  if (confirm(`Supprimer ${nom} définitivement ?`)) {
+    delete S.crew.characters[key];
+    closeModal('modalNewChar');
+    renderCrew();
+    save();
+    toast(`${nom} supprimé`);
+  }
+}
 function buildSystemPrompt() {
   // Toutes les entrées constantes
   const consts = S.lorebook.filter(e=>e.constant&&e.enabled).map(e=>e.content).join('\n\n');
@@ -1830,6 +2187,42 @@ L'utilisateur peut répondre: "3" (suggestion 3), "5-2-1" (dans cet ordre), "3 m
 
   const crewCtx = buildCrewContext();
 
+  const hakiRules = `
+=== RÈGLES VISUELLES DU HAKI — ABSOLUES ===
+Les effets visuels du haki sont STRICTS. Ne jamais les mélanger, substituer ou improviser.
+
+FLUIDE PERCEPTIF (Observation) :
+- Basique → petite lueur rouge dans les yeux du porteur, UNIQUEMENT au moment de l'activation. Aucun autre effet visuel.
+- Avancé → yeux qui blanchissent entièrement, pupilles qui disparaissent, au moment de l'activation. Requiert un état de calme constant — émotion ou douleur intense brise la vision.
+- Suprême → le porteur efface sa propre existence. Indétectable même pour un autre utilisateur du perceptif. Aucun effet visuel.
+
+FLUIDE OFFENSIF (Armement) :
+- Basique → noircissement partiel ou total du membre ou de l'arme. Noir mat, encre sèche, opaque, sans reflet. Activation instantanée. Zone variable (défaut = zone d'impact). Visible de loin.
+  Sons : armement vs armement → CLANG, KRING, TCHING / vs matière dure non revêtue → KRAAK, BOUM / vs chair non revêtue → THUD, CRUNCH.
+  Endurance : novice s'épuise vite / intermédiaire normale / expert quasi infinie à volonté.
+- Avancé (Ryuo) → aura lumineuse rouge à orangé enveloppant le membre ou l'arme. La frappe s'arrête à quelques centimètres — les dégâts traversent déjà vers l'intérieur. Ondulations subtiles au point d'impact. Même endurance que le basique.
+
+FLUIDE ROYAL (Rois) :
+- Basique → onde de choc INVISIBLE, pression atmosphérique écrasante. JAMAIS d'éclairs noirs. JAMAIS de crépitements.
+- Avancé → éclairs noirs crépitant autour du combattant. Pression palpable, sol qui se fissure. Revêtement des attaques/armes/projectiles possible. Combinable avec le fluide offensif. Semi-immunité aux effets directs des fruits du démon (pas contre les attaques physiques/élémentaires). UNIQUEMENT pour les personnages ayant cette forme dans leur fiche.
+- Suprême → éclairs noirs massifs, portée île entière, ciel assombri, tout décuplé. Immunité totale aux effets directs des fruits du démon. NE PAS DÉCRIRE sans instruction explicite.
+
+RÈGLE ABSOLUE : Les capacités s'activent UNIQUEMENT si l'utilisateur les déclenche explicitement ou si le contexte narratif le justifie de manière évidente. Un personnage ne peut pas utiliser une forme qu'il ne maîtrise pas.
+
+RAPPEL CRITIQUE : Shanks possède le fluide royal BASIQUE encore incontrôlé → il ne crépite JAMAIS d'éclairs noirs. Jamais.`;
+
+  const powerScaleRules = `
+=== ÉCHELLE DE PUISSANCE — RÈGLE ABSOLUE ===
+Chaque personnage a un niveau de 1 à 100 défini dans sa fiche. Ce niveau définit sa puissance relative.
+Écart de 10+ points → le personnage supérieur domine clairement.
+Écart de 20+ points → le personnage inférieur ne peut pas gagner sans circonstance extraordinaire.
+Écart de 30+ points → combat expéditif, pas de suspense, résultat inévitable.
+Le rang narratif (Inconnu / Émergent / Dangereux / Redoutable / Légendaire / Transcendant) est indicatif.
+Le niveau prime toujours sur les impressions narratives.
+Un personnage n'utilise que les formes de fluide listées dans sa fiche, au niveau de maîtrise indiqué.
+"Incontrôlé" = le personnage possède la capacité mais ne peut PAS la déclencher volontairement — elle surgit seule sous forte émotion.
+Si statutCombat = "blessé" → capacités réduites. "Gravement blessé" → capacités très limitées. "Hors combat" → incapable de combattre.`;
+
   return `Tu es un auteur de fanfiction One Piece. Tu écris des scènes cinématiques manga shonen en français.
 Tu joues TOUS les personnages. L'utilisateur est le réalisateur : il lance les grandes actions. Toi, tu donnes vie à la scène — les réactions, les émotions, l'ambiance, les commentaires spontanés des témoins. Tu n'es pas un robot qui exécute mécaniquement, tu es un co-auteur qui gère tout ce qui gravite autour de la direction donnée.
 Le lorebook ci-dessous est ta BIBLE D'AUTEUR uniquement. Il te permet de jouer les personnages avec exactitude — caractère, pouvoirs, expression, rang, affiliation. Aucune improvisation qui contredirait le lorebook.
@@ -1839,6 +2232,10 @@ ${fullLore}
 ${tlCtx}
 
 ${crewCtx}
+
+${hakiRules}
+
+${powerScaleRules}
 
 === ⚠️ RÈGLE FONDAMENTALE : CONNAISSANCE MÉTA VS CONNAISSANCE DES PERSONNAGES ===
 Le lorebook est la BIBLE DE L'AUTEUR, pas la bible des personnages.
